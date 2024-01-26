@@ -82,12 +82,50 @@ namespace TaxReporterCLI
             var transactionViews = await builder.BuildAsync(transactions);
 
             var summaryViews = CreateDividendSummaryViews(transactionViews);
+            var stockSummaryViews = CreateStockSummaryViews(transactionViews);
+            var esppSummaryViews = CreateESPPSummaryViews(transactionViews);
 
             var views = new List<object>(transactionViews);
             views.AddRange(summaryViews);
+            views.AddRange(stockSummaryViews);
+            views.AddRange(esppSummaryViews);
 
             Print(option, views);
         }
+
+		private static IList<object> CreateStockSummaryViews(IList<TransactionView> transactionViews)
+		{
+			var summaryViews = new List<object>();
+			var usedCurrencies = transactionViews.Select(i => i.Transaction.Currency).Distinct();
+			foreach (var currency in usedCurrencies)
+			{
+				var currencySummaryView = new StockCurrencySummaryView(transactionViews.OfType<DepositTransactionView>().ToList(), currency);
+
+				if (currencySummaryView.CombinedIncome > 0)
+				{
+					summaryViews.Add(currencySummaryView);
+				}
+			}
+
+			return summaryViews;
+		}
+
+		private static IList<object> CreateESPPSummaryViews(IList<TransactionView> transactionViews)
+		{
+			var summaryViews = new List<object>();
+			var usedCurrencies = transactionViews.Select(i => i.Transaction.Currency).Distinct();
+			foreach (var currency in usedCurrencies)
+			{
+				var currencySummaryView = new ESPPCurrencySummaryView(transactionViews.OfType<ESPPTransactionView>().ToList(), currency);
+
+				if (currencySummaryView.CombinedProfit > 0)
+				{
+					summaryViews.Add(currencySummaryView);
+				}
+			}
+
+			return summaryViews;
+		}
 
         private static IList<object> CreateDividendSummaryViews(IList<TransactionView> transactionViews)
         {

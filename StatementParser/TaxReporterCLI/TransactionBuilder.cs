@@ -27,6 +27,7 @@ namespace TaxReporterCLI
             var output = new List<TransactionView>();
 
             var kurzyCurrencyListPerYear = await exchangeProviderPerYear.FetchCurrencyListsForDatesAsync(transactions.Select(i => new DateTime(i.Date.Year, 1, 1)).ToHashSet());
+
             var cnbCurrencyListPerDay = await exchangeProviderPerDay.FetchCurrencyListsForDatesAsync(transactions.Select(i => i.Date.Date).ToHashSet());
 
             foreach (var transaction in transactions)
